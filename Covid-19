@@ -1,0 +1,37 @@
+
+import requests
+from bs4 import BeautifulSoup
+import pandas as pd
+import matplotlib.pyplot as plt
+url = 'https://www.worldometers.info/coronavirus/countries-where-coronavirus-has-spread/'
+ 
+
+page = requests.get(url)
+soup = BeautifulSoup(page.text, 'html.parser')
+s=soup.select("td")
+
+nd2=soup.select(".content-inner p a") # css selector 
+#print(nd2)
+print("223 Countries and Territories around the world have reported a total of ",nd2[0].text)
+print("Death toll ",nd2[1].text)
+
+arrtext=[i.text for i in  s]
+
+arr=[arrtext[i:i + 4] for i in range(0, len(arrtext), 4)]
+
+df = pd.DataFrame(arr , columns =['Country',"cases","Deaths","Region"])
+
+df=df.drop(["Region"],axis=1)
+
+df["Deaths"]=df["Deaths"].str.replace(",",'').astype(int)
+df["cases"]=df["cases"].str.replace(",",'').astype(int)
+#df["recovered"]=df["cases"]-df["Deaths"]
+print(df)
+print("Max death: \n",df.loc[df['Deaths']==  df['Deaths'].max()])
+print("Min death: \n",df.loc[df["Deaths"]==df['Deaths'].min()])
+#df.plot(x="Country",y="Deaths",title="Covid-19 data")
+#plt.savefig("plt.png")
+#plt.show()
+
+
+df.to_excel("pop.xlsx")
